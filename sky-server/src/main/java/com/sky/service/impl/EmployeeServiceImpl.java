@@ -100,4 +100,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         return pageResult;
     }
 
+    @Override
+    public void startOrStop(Integer status, Long id) {
+        Employee employee = new Employee();
+        employee.setStatus(status);
+        employee.setId(id);
+        //动态调用一个update 这样就不需要传入这两个值了，直接传入一个对象
+        employeeMapper.startOrStop(employee);
+    }
+
 }
