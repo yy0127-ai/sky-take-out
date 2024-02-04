@@ -18,4 +18,6 @@ public interface DishFlavorMapper {
     Integer countByCategoryId(Long categoryId);
 
     void insertBatch(List<DishFlavor> flavors);
+
+    void deleteByIds(List<Long> ids);
 }
