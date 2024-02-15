@@ -16,4 +16,8 @@ public interface SetmealService {
     void deleteByIds(List<Long> ids);
 
     SetmealVO getById(Long id);
+
+    void editSetmeal(SetmealDTO setmealDTO);
+
+    void startOrStop(Integer status, Long id);
 }

@@ -5,9 +5,11 @@ import com.sky.constant.MessageConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.entity.Setmeal;
 import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
+import com.sky.exception.SetmealEnableFailedException;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
 import com.sky.mapper.SetmealMapper;
@@ -28,6 +30,8 @@ public class SetmealServiceImpl implements SetmealService {
     private SetmealMapper setmealMapper;
     @Autowired
     private SetmealDishMapper setmealDishMapper;
+    @Autowired
+    private DishMapper dishMapper;
     /**
      * 新增菜品
      * @param setmealDTO
@@ -93,5 +97,47 @@ public class SetmealServiceImpl implements SetmealService {
         List<SetmealDish> setmealDishs = setmealDishMapper.getById(id);
         setmealVO.setSetmealDishes(setmealDishs);
         return setmealVO;
+    }
+
+    /**
+     * 修改套餐
+     * @param setmealDTO
+     */
+    @Transactional
+    public void editSetmeal(SetmealDTO setmealDTO) {
+        //修改套餐
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        setmealMapper.update(setmeal);
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        Long setmealId = setmealDTO.getId();
+        //修改套餐中的菜品 首先先删除所有对应的菜品 再增加菜品
+        setmealDishMapper.deleteById(setmealId);
+        for (SetmealDish setmealDish : setmealDishes) {
+            setmealDish.setSetmealId(setmealId);
+        }
+        setmealDishMapper.insert(setmealDishes);
+    }
+
+    /**
+     * 套餐起售、停售
+     * @param status
+     */
+    public void startOrStop(Integer status, Long id) {
+        //起售套餐时，判断套餐内是否有停售菜品，有停售菜品提示“套餐内包含未起售菜品，无法起售
+        if (status == StatusConstant.ENABLE) {
+            List<Dish> dishes = dishMapper.getBySetmealId(id);
+            if (dishes != null && dishes.size() > 0) {
+                dishes.forEach(dish -> {
+                    if (StatusConstant.DISABLE == dish.getStatus()){
+                        throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                    }
+                });
+            }
+        }
+        Setmeal setmeal = new Setmeal();
+        setmeal.setStatus(status);
+        setmeal.setId(id);
+        setmealMapper.update(setmeal);
     }
 }

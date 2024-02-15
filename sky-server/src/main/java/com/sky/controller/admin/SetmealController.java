@@ -83,8 +83,21 @@ public class SetmealController {
     @PutMapping
     @ApiOperation("修改套餐")
     public Result editSetmeal(@RequestBody SetmealDTO setmealDTO) {
-        log.info("修改套餐");
+        log.info("修改套餐{}", setmealDTO);
+        setmealService.editSetmeal(setmealDTO);
         return Result.success();
     }
 
+    /**
+     * 套餐起售、停售
+     * @param status
+     * @return
+     */
+    @PostMapping("/status/{status}")
+    @ApiOperation("套餐起售、停售")
+    public Result startOrStop(@PathVariable Integer status, Long id) {
+        log.info("套餐起售、停售");
+        setmealService.startOrStop(status, id);
+        return Result.success();
+    }
 }
